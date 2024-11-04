@@ -58,7 +58,7 @@ try:
                 driver.quit()
                 driver = None
 
-        time.sleep(60*20)  # 每5分钟检查一次
+        time.sleep(60*20)  # 每20分钟检查一次
 
 except KeyboardInterrupt:
     pass  # 捕获用户中断，但不打印
