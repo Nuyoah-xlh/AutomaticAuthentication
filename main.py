@@ -14,6 +14,9 @@ print("正在初始化程序...")
 # 设置Chrome选项以隐藏浏览器
 chrome_options = Options()
 chrome_options.add_argument('--headless')  # 使用无头模式
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--remote-debugging-port=9222')
 
 # 设置WebDriver路径
 driver_path = './chromedriver-win64/chromedriver.exe'  # 替换为您的WebDriver路径
@@ -82,8 +85,19 @@ try:
 
             # 检查网络连接
             print("检查网络连通性...")
-            response = subprocess.call(["ping", "-n", "1", "www.baidu.com"], stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            # response = subprocess.call(["ping", "-n", "1", "www.baidu.com"], stdout=subprocess.PIPE,
+            #                            stderr=subprocess.PIPE)
+            # 替换原来的 ping 调用
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+
+            response = subprocess.call(
+                ["ping", "-n", "1", "www.baidu.com"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                startupinfo=startupinfo  # 关键：隐藏控制台窗口
+            )
             if response != 0:
                 print("检测到网络未认证,准备进行认证...")
                 # 如果无法连接外网，启动浏览器并访问登录页面
@@ -161,8 +175,9 @@ try:
                     driver.quit()
                     driver = None
 
-            print("等待20分钟后进行下一次检查...")
-            time.sleep(20*60)  # 每20分钟检查一次
+            timeout = 10*60  # 超时时间为x秒钟
+            print("等待"+str(timeout)+"秒钟后进行下一次检查...")
+            time.sleep(10)  # 每x秒钟检查一次
 
         except Exception as e:
             print(f"发生异常: {str(e)}")
